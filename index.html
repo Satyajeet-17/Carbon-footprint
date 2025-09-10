@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Footprint Quest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* New, more attractive background */
+            background-image: radial-gradient(circle at top right, #dcfce7, #a7f3d0), url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239ca3af' fill-opacity='0.15'%3E%3Cpath d='M36 34.253V33h5.253a4 4 0 010 8H41v5.253a4 4 0 01-8 0V41h-5.253a4 4 0 010-8H33v-5.253a4 4 0 018 0V33h5.253a4 4 0 010 8H41v5.253a4 4 0 01-8 0V41h-5.253a4 4 0 010-8H33z M12 28a4 4 0 11-8 0 4 4 0 018 0zm-8 8a4 4 0 110-8 4 4 0 010 8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-size: cover, 100px 100px;
+        }
+        .game-container {
+            max-width: 90%;
+            width: 700px;
+            padding: 1.5rem;
+            background-color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+        }
+        .button {
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        .draggable {
+            cursor: grab;
+            transition: transform 0.2s ease-in-out;
+            touch-action: none; /* Prevent browser default touch behavior */
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .dropzone {
+            min-height: 200px;
+            border-style: dashed;
+            border-width: 3px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .dropzone.drag-over {
+            transform: scale(1.02);
+            box-shadow: 0 0 10px #60a5fa;
+        }
+        /* New animations for visual feedback */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes flash-green {
+            0% { background-color: #d1fae5; }
+            50% { background-color: #10b981; }
+            100% { background-color: #d1fae5; }
+        }
+        .flash-green {
+            animation: flash-green 0.5s ease-in-out;
+        }
+        @keyframes flash-red {
+            0% { background-color: #fee2e2; }
+            50% { background-color: #ef4444; }
+            100% { background-color: #fee2e2; }
+        }
+        .flash-red {
+            animation: flash-red 0.5s ease-in-out;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0;
+            border-radius: 9999px;
+            height: 0.75rem;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #3b82f6;
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-green-100 via-lime-100 to-emerald-200">
+
+    <div id="game-app" class="game-container">
+        <!-- Game content will be rendered here by JavaScript -->
+    </div>
+
+    <script>
+        const app = document.getElementById('game-app');
+        let totalScore = 0;
+        let correctDrops = 0;
+        let itemsDropped = 0;
+        const totalItems = 10;
+        let timer = 60; // Game timer in seconds
+        let timerInterval;
+        let streak = 0;
+        let scoreMultiplier = 1;
+
+        // You can add audio here, for example:
+        // const correctSound = new Audio('path/to/correct_sound.mp3');
+        // const incorrectSound = new Audio('path/to/incorrect_sound.mp3');
+
+        const items = [
+            { id: '1', name: 'Recycling bottles', category: 'good', basePoints: 10, icon: '♻️' },
+            { id: '2', name: 'Driving a gas car', category: 'bad', basePoints: 10, icon: '🚗' },
+            { id: '3', name: 'Eating a plant-based meal', category: 'good', basePoints: 10, icon: '🥗' },
+            { id: '4', name: 'Using plastic bags', category: 'bad', basePoints: 10, icon: '🛍️' },
+            { id: '5', name: 'Using a reusable water bottle', category: 'good', basePoints: 10, icon: '💧' },
+            { id: '6', name: 'Leaving lights on', category: 'bad', basePoints: 10, icon: '💡' },
+            { id: '7', name: 'Taking a short flight', category: 'bad', basePoints: 10, icon: '✈️' },
+            { id: '8', name: 'Biking to school', category: 'good', basePoints: 10, icon: '🚲' },
+            { id: '9', name: 'Composting food waste', category: 'good', basePoints: 10, icon: '🍎' },
+            { id: '10', name: 'Buying fast fashion', category: 'bad', basePoints: 10, icon: '👕' }
+        ];
+
+        function renderWelcomeScreen() {
+            // Clear any existing timer
+            clearInterval(timerInterval);
+
+            app.innerHTML = `
+                <div class="space-y-6">
+                    <h1 class="text-4xl font-bold text-gray-800">Carbon Footprint Quest</h1>
+                    <p class="text-gray-600">Drag and drop each item into the correct category. Earn 10 points for each correct drop, but lose 5 for an incorrect one! Correct drops also build a streak for bonus points. A higher score is better! Be quick - you only have 60 seconds!</p>
+                    <button id="startButton" class="w-full px-6 py-3 text-white bg-blue-500 rounded-xl hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300 button">Start Quest</button>
+                    <p class="text-xs text-gray-400">Disclaimer: This is a simplified educational tool and not a precise scientific calculation.</p>
+                </div>
+            `;
+            document.getElementById('startButton').addEventListener('click', () => {
+                totalScore = 0;
+                correctDrops = 0;
+                itemsDropped = 0;
+                timer = 60;
+                streak = 0;
+                scoreMultiplier = 1;
+                renderGame();
+            });
+        }
+
+        function renderGame() {
+            // Shuffle the items for a new experience each time
+            items.sort(() => Math.random() - 0.5);
+
+            const itemHtml = items.map(item => `
+                <div id="item-${item.id}" draggable="true" data-category="${item.category}" class="draggable flex items-center justify-center bg-white p-4 rounded-xl shadow-md text-gray-800 text-sm font-semibold m-2 select-none">
+                    ${item.icon} <span class="ml-2">${item.name}</span>
+                </div>
+            `).join('');
+
+            app.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-lg font-semibold text-gray-800">Score: <span id="score" class="text-2xl font-bold text-blue-600">${totalScore}</span></span>
+                        <span class="text-lg font-semibold text-gray-800">Time: <span id="timer" class="text-2xl font-bold text-blue-600">${timer}</span>s</span>
+                    </div>
+
+                    <div class="progress-bar-container mb-4">
+                        <div id="progress-bar" class="progress-bar" style="width: 0%;"></div>
+                    </div>
+
+                    <div class="text-lg font-semibold text-gray-800">Streak: <span id="streak" class="text-xl font-bold text-green-600">${streak}</span> (x<span id="multiplier">${scoreMultiplier}</span>)</div>
+
+                    <div id="items-container" class="flex flex-wrap justify-center p-4 bg-gray-100 rounded-lg shadow-inner">
+                        ${itemHtml}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div id="dropzone-good" data-category="good" class="dropzone rounded-xl border-green-400 bg-green-50">
+                            <h3 class="text-xl font-bold text-green-700 mb-2">Good for the Planet</h3>
+                            <p class="text-green-500 text-sm">Drag sustainable actions here!</p>
+                        </div>
+                        <div id="dropzone-bad" data-category="bad" class="dropzone rounded-xl border-red-400 bg-red-50">
+                            <h3 class="text-xl font-bold text-red-700 mb-2">Bad for the Planet</h3>
+                            <p class="text-red-500 text-sm">Drag polluting actions here!</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Start the timer
+            timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('timer').textContent = timer;
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    renderResults(false); // Game over by time
+                }
+            }, 1000);
+
+            // Add event listeners for dragging and dropping
+            document.querySelectorAll('.draggable').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+            });
+            document.querySelectorAll('.dropzone').forEach(dropzone => {
+                dropzone.addEventListener('dragover', handleDragOver);
+                dropzone.addEventListener('dragleave', handleDragLeave);
+                dropzone.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.target.classList.add('opacity-50');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.target.closest('.dropzone').classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.target.closest('.dropzone').classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const dropzone = e.target.closest('.dropzone');
+            dropzone.classList.remove('drag-over');
+
+            const itemId = e.dataTransfer.getData('text/plain');
+            const draggedItem = document.getElementById(itemId);
+
+            if (draggedItem) {
+                const itemCategory = draggedItem.dataset.category;
+                const dropzoneCategory = dropzone.dataset.category;
+                const item = items.find(i => `item-${i.id}` === itemId);
+
+                if (itemCategory === dropzoneCategory) {
+                    // Correct drop
+                    streak++;
+                    scoreMultiplier = 1 + (streak * 0.5);
+                    totalScore += item.basePoints * scoreMultiplier;
+                    correctDrops++;
+                    
+                    // Animate the dropzone
+                    dropzone.classList.add('flash-green');
+                    setTimeout(() => dropzone.classList.remove('flash-green'), 500);
+                } else {
+                    // Incorrect drop
+                    streak = 0;
+                    scoreMultiplier = 1;
+                    totalScore -= 5; // Penalize for incorrect drop
+
+                    // Animate the item and the dropzone
+                    draggedItem.classList.add('shake');
+                    dropzone.classList.add('flash-red');
+                    setTimeout(() => {
+                        draggedItem.classList.remove('shake');
+                        dropzone.classList.remove('flash-red');
+                    }, 500);
+                }
+
+                // Remove the item and increment the total dropped count regardless of correctness
+                draggedItem.remove();
+                itemsDropped++;
+
+                // Reset opacity and update UI
+                draggedItem.classList.remove('opacity-50');
+                document.getElementById('score').textContent = totalScore;
+                document.getElementById('streak').textContent = streak;
+                document.getElementById('multiplier').textContent = scoreMultiplier.toFixed(1);
+
+                // Update progress bar based on total items dropped
+                const progress = (itemsDropped / totalItems) * 100;
+                document.getElementById('progress-bar').style.width = `${progress}%`;
+
+                // Check for game end condition
+                if (itemsDropped === totalItems) {
+                    renderResults(true); // Game over by completion
+                }
+            }
+        }
+
+        function renderResults(isCompleted) {
+            clearInterval(timerInterval);
+
+            const getResultText = (score) => {
+                if (score >= 80) return "Excellent! You are a carbon-conscious superstar. Keep up the great work!";
+                if (score >= 50) return "Great job! You are doing well. There's always a little room for improvement.";
+                if (score >= 20) return "Good start! You have a moderate footprint. Small changes can make a big difference.";
+                return "Time to make some changes! Don't worry, every small step helps. Learn how to lower your score below.";
+            };
+
+            const getTips = (score) => {
+                if (score >= 80) {
+                    return `
+                        <li><span class="font-semibold">Keep it up!</span> Inspire your friends and family with your sustainable habits.</li>
+                        <li><span class="font-semibold">Go local:</span> Support local businesses to reduce transport emissions.</li>
+                    `;
+                } else if (score >= 50) {
+                    return `
+                        <li><span class="font-semibold">Rethink your diet:</span> Try a plant-based meal once a week.</li>
+                        <li><span class="font-semibold">Reduce your footprint:</span> Try to turn off the water when brushing your teeth or washing your face.</li>
+                    `;
+                } else {
+                    return `
+                        <li><span class="font-semibold">Change your transport:</span> Try carpooling, biking, or walking more often.</li>
+                        <li><span class="font-semibold">Use less energy:</span> Unplug electronics when you are not using them.</li>
+                        <li><span class="font-semibold">Reduce, reuse, recycle:</span> Avoid single-use plastics and remember to sort your waste.</li>
+                    `;
+                }
+            };
+
+            let endMessage = isCompleted ? "You successfully categorized all items!" : "Time's up!";
+
+            app.innerHTML = `
+                <div class="space-y-6">
+                    <h1 class="text-3xl font-bold text-gray-800">Your Results</h1>
+                    <p class="text-lg text-gray-600">${endMessage}</p>
+                    <p class="text-gray-600">Your final score is:</p>
+                    <p class="text-6xl font-extrabold text-blue-600">${totalScore}</p>
+                    <p class="text-lg font-semibold text-gray-700">${getResultText(totalScore)}</p>
+                    <div class="mt-8 text-left">
+                        <h3 class="text-xl font-bold text-gray-700">Tips to improve:</h3>
+                        <ul class="list-disc list-inside mt-2 space-y-2 text-gray-600">
+                            ${getTips(totalScore)}
+                        </ul>
+                    </div>
+                    <button onclick="renderWelcomeScreen()" class="w-full px-6 py-3 text-white bg-blue-500 rounded-xl hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300 button">Play Again</button>
+                </div>
+            `;
+        }
+
+        // Initialize the game
+        renderWelcomeScreen();
+    </script>
+</body>
+</html>

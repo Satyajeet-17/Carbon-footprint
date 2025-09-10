@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waste Segregation Quiz</title>
+    <!-- Tailwind CSS for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Poppins and Inter fonts for a modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', 'Inter', sans-serif;
+            background: #e0eafc; /* Light blue-to-purple gradient background */
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #2c3e50;
+            padding: 1rem;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 700px; /* Adjusted for a more compact PC view */
+            background: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem; /* Reduced padding */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem; /* Reduced margin */
+            font-weight: 600;
+        }
+
+        .quiz-box {
+            background-color: #f7f9fc;
+            padding: 1.5rem; /* Reduced padding */
+            border-radius: 1.5rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            width: 100%;
+        }
+
+        .question-image {
+            width: 100%;
+            max-height: 180px; /* Reduced max-height for vertical space */
+            object-fit: contain;
+            margin-bottom: 1rem; /* Reduced margin */
+            border-radius: 1rem;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-text {
+            font-size: 1.25rem; /* Reduced font size */
+            font-weight: 700;
+            margin-bottom: 1.5rem; /* Reduced margin */
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .answers-container {
+            display: grid;
+            gap: 1rem; /* Reduced gap */
+            width: 100%;
+        }
+
+        .answer-button {
+            width: 100%;
+            padding: 1rem; /* Reduced padding */
+            background-color: #eef2f8;
+            border-radius: 1rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            font-weight: 500;
+            text-align: left;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            transform: translateY(0);
+        }
+
+        .answer-button:hover:not([disabled]) {
+            background-color: #e0e8f2;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .answer-button.correct {
+            background: #28a745;
+            color: white;
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .answer-button.incorrect {
+            background: #dc3545;
+            color: white;
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        .answer-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .rationale {
+            margin-top: 1.25rem; /* Reduced margin */
+            font-size: 0.9rem;
+            font-style: italic;
+            color: #4b5563;
+            background: #f0f4f8;
+            padding: 0.75rem; /* Reduced padding */
+            border-radius: 0.75rem;
+        }
+        
+        .hint-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #ffebcc;
+            border-left: 5px solid #ff9900;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            color: #7b5800;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        
+        .nav-buttons-container {
+            display: flex;
+            gap: 1rem; /* Reduced gap */
+            margin-top: 1.5rem; /* Reduced margin */
+        }
+
+        .nav-button {
+            background-color: #3B82F6;
+            color: white;
+            padding: 0.75rem 2rem; /* Reduced padding */
+            border-radius: 9999px;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        #next-button {
+            background-color: #28a745;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        #next-button:hover {
+            background-color: #218838;
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        #skip-button {
+            background-color: #6c757d;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+        #skip-button:hover {
+            background-color: #5a6268;
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .final-score-screen {
+            display: none;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .final-score-screen p {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .final-score-screen h2 {
+            font-size: 3rem; /* Reduced font size */
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 1.5rem;
+        }
+
+        .analysis-box {
+            background-color: #f7f9fc;
+            padding: 1.5rem; /* Reduced padding */
+            border-radius: 1.5rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            margin-top: 1.5rem; /* Reduced margin */
+            text-align: left;
+        }
+        
+        .analysis-box h3 {
+            font-size: 1.25rem; /* Reduced font size */
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .analysis-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem; /* Reduced margin */
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        
+        .analysis-item .icon {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="header">
+            <span id="score-display">Score: 0</span>
+            <span id="question-count">Question 1 of 5</span>
+        </div>
+        
+        <div id="quiz-section">
+            <div class="quiz-box">
+                <img id="question-image" src="" alt="Question image" class="question-image" style="display: none;">
+                <p id="question-text" class="question-text"></p>
+                <div id="answers-container" class="answers-container"></div>
+            </div>
+            <div class="nav-buttons-container">
+                <button id="skip-button" class="nav-button">Skip</button>
+                <button id="hint-button" class="nav-button">Hint</button>
+                <button id="next-button" class="nav-button" style="display: none;">Next</button>
+            </div>
+            <div id="hint-box" class="hint-box mt-4" style="display: none;"></div>
+        </div>
+
+        <div id="final-score-screen" class="final-score-screen">
+            <p>Quiz Complete!</p>
+            <h2>Final Score: <span id="final-score">0</span> / 5</h2>
+            <div id="analysis-container" class="analysis-box"></div>
+            <button id="restart-button" class="nav-button">Play Again</button>
+        </div>
+
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                "questionNumber": 1,
+                "question": "Which of the following items is generally considered recyclable?",
+                "topic": "Recyclable Materials",
+                "imageUrl": "https://placehold.co/600x400/D1FAE5/1F2937?text=Recycling+Bin+and+Can",
+                "hint": "Think about materials that can be easily reprocessed into new products.",
+                "answerOptions": [
+                    { "text": "Plastic grocery bag", "rationale": "Plastic grocery bags can jam recycling machinery and should be recycled at special drop-off locations, not in curbside bins.", "isCorrect": false },
+                    { "text": "Empty aluminum soda can", "rationale": "Aluminum cans are highly valuable and can be recycled repeatedly without loss of quality.", "isCorrect": true },
+                    { "text": "Styrofoam cup", "rationale": "Styrofoam is difficult and expensive to recycle, so it is typically not accepted in municipal recycling programs.", "isCorrect": false },
+                    { "text": "Used pizza box with grease stains", "rationale": "Grease and food residue can contaminate the paper recycling process, making the entire batch unusable.", "isCorrect": false }
+                ]
+            },
+            {
+                "questionNumber": 2,
+                "question": "What is the primary benefit of composting organic waste?",
+                "topic": "Composting",
+                "imageUrl": "https://placehold.co/600x400/BFDBFE/1F2937?text=Compost+Pile",
+                "hint": "Consider what happens to things like food scraps and yard trimmings in a natural environment.",
+                "answerOptions": [
+                    { "text": "It helps to generate electricity for homes.", "rationale": "While some waste-to-energy plants can process certain types of waste, composting's main goal is not energy production.", "isCorrect": false },
+                    { "text": "It reduces landfill waste and creates nutrient-rich soil.", "rationale": "Composting breaks down organic materials into a valuable soil amendment, which helps improve soil health.", "isCorrect": true },
+                    { "text": "It provides material for creating new plastic bottles.", "rationale": "Composting only handles organic materials and cannot be used to create new plastic products.", "isCorrect": false },
+                    { "text": "It is the only way to dispose of glass and metal.", "rationale": "Glass and metal are non-organic materials that are recycled in dedicated facilities, not through composting.", "isCorrect": false }
+                ]
+            },
+            {
+                "questionNumber": 3,
+                "question": "Which of the following items should be placed in the non-recyclable waste bin?",
+                "topic": "Non-Recyclable Materials",
+                "imageUrl": "https://placehold.co/600x400/D1D5DB/1F2937?text=Dirty+Coffee+Cup",
+                "hint": "Think about items that are made of mixed materials or contain substances that are hard to separate.",
+                "answerOptions": [
+                    { "text": "Clean paper coffee cup", "rationale": "Most paper coffee cups have a plastic or wax lining that makes them non-recyclable and they should be placed in the trash.", "isCorrect": true },
+                    { "text": "Empty glass jar", "rationale": "Glass jars are generally recyclable and can be processed into new glass products.", "isCorrect": false },
+                    { "text": "Cardboard shipping box", "rationale": "Cardboard is a valuable recyclable material that can be pulped and reused for new paper products.", "isCorrect": false },
+                    { "text": "Empty plastic milk jug", "rationale": "Plastic jugs are a common recyclable item that can be reprocessed into new plastic products.", "isCorrect": false }
+                ]
+            },
+            {
+                "questionNumber": 4,
+                "question": "Why is it important to separate glass bottles and jars from other recyclables?",
+                "topic": "Glass and Contamination",
+                "imageUrl": "https://placehold.co/600x400/FFB3B3/1F2937?text=Broken+Glass+Shards",
+                "hint": "Consider the physical properties of glass and how it interacts with other materials when it is crushed.",
+                "answerOptions": [
+                    { "text": "To prevent them from being accidentally thrown away.", "rationale": "While proper sorting helps ensure they are not thrown away, the main reason for separation is related to the processing of the materials.", "isCorrect": false },
+                    { "text": "To avoid contamination and to prevent them from breaking and damaging other materials.", "rationale": "Glass can shatter into small shards that contaminate other recyclables like paper and plastic, which can damage recycling machinery and reduce the value of the materials.", "isCorrect": true },
+                    { "text": "Because glass recycling is not profitable.", "rationale": "While the profitability of recycling can fluctuate, it is still a significant reason for separate collection.", "isCorrect": false },
+                    { "text": "To make them easier to compost.", "rationale": "Glass is not an organic material and cannot be composted.", "isCorrect": false }
+                ]
+            },
+            {
+                "questionNumber": 5,
+                "question": "What is the best way to dispose of used coffee grounds?",
+                "topic": "Compostable Materials",
+                "imageUrl": "https://placehold.co/600x400/8B4513/FFFFFF?text=Used+Coffee+Grounds",
+                "hint": "These grounds are an excellent source of nitrogen for your garden.",
+                "answerOptions": [
+                    { "text": "Put them in the trash", "rationale": "Coffee grounds can be a valuable resource and don't belong in a landfill.", "isCorrect": false },
+                    { "text": "Pour them down the sink drain", "rationale": "This can cause plumbing clogs and is not an environmentally friendly way to dispose of them.", "isCorrect": false },
+                    { "text": "Compost them", "rationale": "Coffee grounds are a great source of organic matter and can be added to your compost pile to enrich soil.", "isCorrect": true },
+                    { "text": "Recycle them with plastics", "rationale": "Coffee grounds are an organic material and cannot be recycled with plastics.", "isCorrect": false }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+        let userPerformance = [];
+
+        const quizSection = document.getElementById('quiz-section');
+        const finalScoreScreen = document.getElementById('final-score-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const questionCount = document.getElementById('question-count');
+        const questionImage = document.getElementById('question-image');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const nextButton = document.getElementById('next-button');
+        const hintButton = document.getElementById('hint-button');
+        const skipButton = document.getElementById('skip-button');
+        const hintBox = document.getElementById('hint-box');
+        const restartButton = document.getElementById('restart-button');
+        const analysisContainer = document.getElementById('analysis-container');
+
+        function showQuestion() {
+            if (currentQuestionIndex >= quizData.length) {
+                showFinalScore();
+                return;
+            }
+
+            answered = false;
+            nextButton.style.display = 'none';
+            hintBox.style.display = 'none';
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            questionText.textContent = currentQuestion.question;
+
+            if (currentQuestion.imageUrl) {
+                questionImage.src = currentQuestion.imageUrl;
+                questionImage.style.display = 'block';
+            } else {
+                questionImage.style.display = 'none';
+            }
+
+            answersContainer.innerHTML = '';
+            currentQuestion.answerOptions.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option.text;
+                button.className = 'answer-button';
+                button.onclick = () => handleAnswerClick(option, button);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function handleAnswerClick(selectedOption, button) {
+            if (answered) return;
+            answered = true;
+            
+            const currentQuestion = quizData[currentQuestionIndex];
+            let isCorrect = selectedOption.isCorrect;
+            userPerformance.push({
+                topic: currentQuestion.topic,
+                correct: isCorrect
+            });
+
+            if (isCorrect) {
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                button.classList.add('correct');
+            } else {
+                button.classList.add('incorrect');
+            }
+
+            // Highlight the correct answer
+            Array.from(answersContainer.children).forEach(btn => {
+                const option = currentQuestion.answerOptions.find(opt => opt.text === btn.textContent);
+                if (option.isCorrect) {
+                    btn.classList.add('correct');
+                }
+                btn.disabled = true;
+            });
+
+            // Show rationale
+            const rationaleDiv = document.createElement('div');
+            const rationaleText = selectedOption.rationale;
+            const emoji = isCorrect ? '✅' : '❌';
+            rationaleDiv.innerHTML = `<span class="font-bold">${emoji}</span> ${rationaleText}`;
+            rationaleDiv.className = 'rationale';
+            answersContainer.appendChild(rationaleDiv);
+
+            nextButton.style.display = 'block';
+        }
+
+        function handleSkip() {
+            if (answered) return;
+            
+            userPerformance.push({
+                topic: quizData[currentQuestionIndex].topic,
+                correct: false,
+                skipped: true
+            });
+            currentQuestionIndex++;
+            showQuestion();
+        }
+
+        function showHint() {
+            const currentQuestion = quizData[currentQuestionIndex];
+            hintBox.textContent = currentQuestion.hint;
+            hintBox.style.display = 'block';
+        }
+
+        function showFinalScore() {
+            quizSection.style.display = 'none';
+            finalScoreScreen.style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+            generateAnalysis();
+        }
+
+        function generateAnalysis() {
+            analysisContainer.innerHTML = '<h3>Performance Analysis</h3>';
+            const topics = {};
+            
+            userPerformance.forEach(perf => {
+                if (!topics[perf.topic]) {
+                    topics[perf.topic] = { total: 0, correct: 0, skipped: 0 };
+                }
+                topics[perf.topic].total++;
+                if (perf.correct) {
+                    topics[perf.topic].correct++;
+                }
+                if (perf.skipped) {
+                    topics[perf.topic].skipped++;
+                }
+            });
+
+            for (const topic in topics) {
+                const item = document.createElement('div');
+                let icon = '';
+                let color = '';
+                let feedbackText = '';
+
+                if (topics[topic].skipped > 0) {
+                    icon = '⏩';
+                    color = '#6c757d';
+                    feedbackText = `You skipped ${topics[topic].skipped} question(s) in this topic.`;
+                } else if (topics[topic].correct === topics[topic].total) {
+                    icon = '✅';
+                    color = '#28a745';
+                    feedbackText = `You mastered this topic!`;
+                } else {
+                    icon = '⚠️';
+                    color = '#ff9900';
+                    feedbackText = `You might want to review this topic.`;
+                }
+                
+                item.className = 'analysis-item';
+                item.style.color = color;
+                item.innerHTML = `
+                    <span class="icon">${icon}</span>
+                    <span><strong>${topic}</strong>: ${feedbackText}</span>
+                `;
+                analysisContainer.appendChild(item);
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            userPerformance = [];
+            quizSection.style.display = 'block';
+            finalScoreScreen.style.display = 'none';
+            scoreDisplay.textContent = 'Score: 0';
+            showQuestion();
+        }
+
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            showQuestion();
+        });
+        
+        hintButton.addEventListener('click', showHint);
+        skipButton.addEventListener('click', handleSkip);
+
+        restartButton.addEventListener('click', restartQuiz);
+
+        // Initial call to start the quiz
+        showQuestion();
+
+    </script>
+</body>
+</html>
